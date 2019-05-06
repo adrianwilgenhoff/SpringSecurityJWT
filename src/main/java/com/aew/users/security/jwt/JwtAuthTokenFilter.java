@@ -1,4 +1,4 @@
-package com.aew.users.config.jwt;
+package com.aew.users.security.jwt;
 
 import java.io.IOException;
 
@@ -17,51 +17,55 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
- 
 
- 
+/**
+ * Reads JWT authentication token from the Authorization header of all the
+ * requests Validates the token Loads the user details associated with that
+ * token. Sets the user details in Spring Security’s SecurityContext. Spring
+ * Security uses the user details to perform authorization checks. We can also
+ * access the user details stored in the SecurityContext in our controllers to
+ * perform our business logic.
+ */
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
- 
+
     @Autowired
     private JwtProvider tokenProvider;
- 
+
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
- 
+
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthTokenFilter.class);
- 
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                    HttpServletResponse response, 
-                    FilterChain filterChain) 
-                        throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         try {
-          
+
             String jwt = getJwt(request);
-            if (jwt!=null && tokenProvider.validateJwtToken(jwt)) {
+            if (jwt != null && tokenProvider.validateJwtToken(jwt)) {
                 String username = tokenProvider.getUserNameFromJwtToken(jwt);
- 
+
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication 
-                    = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
- 
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
             logger.error("Can NOT set user authentication -> Message: {}", e);
         }
- 
+
         filterChain.doFilter(request, response);
     }
- 
+
     private String getJwt(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-          
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-          return authHeader.replace("Bearer ","");
+            return authHeader.replace("Bearer ", "");
         }
- 
+
         return null;
     }
 }

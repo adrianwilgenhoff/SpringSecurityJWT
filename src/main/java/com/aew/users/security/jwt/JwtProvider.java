@@ -1,4 +1,4 @@
-package com.aew.users.config.jwt;
+package com.aew.users.security.jwt;
 
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -9,38 +9,39 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
-import com.aew.users.domain.UserPrinciple;
- 
+import com.aew.users.security.UserPrinciple;
+
+/**
+ * Utility class will be used for generating a JWT after a user logs in
+ * successfully, and validating the JWT sent in the Authorization header of the
+ * requests
+ */
 @Component
 public class JwtProvider {
- 
+
     private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
- 
+
+    // Reads the JWT secret from properties.
     @Value("${aew.app.jwtSecret}")
     private String jwtSecret;
- 
+
+    // Read the JWT expiration time from properties.
     @Value("${aew.app.jwtExpiration}")
     private int jwtExpiration;
- 
+
     public String generateJwtToken(Authentication authentication) {
- 
+
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
- 
-        return Jwts.builder()
-                    .setSubject((userPrincipal.getUsername()))
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date((new Date()).getTime() + jwtExpiration))
-                    .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                    .compact();
+
+        return Jwts.builder().setSubject((userPrincipal.getUsername())).setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpiration))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }
- 
+
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser()
-                      .setSigningKey(jwtSecret)
-                      .parseClaimsJws(token)
-                      .getBody().getSubject();
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
- 
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
@@ -56,7 +57,7 @@ public class JwtProvider {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty -> Message: {}", e);
         }
-        
+
         return false;
     }
 }

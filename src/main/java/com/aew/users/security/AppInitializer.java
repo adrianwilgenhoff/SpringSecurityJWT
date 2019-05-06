@@ -1,4 +1,4 @@
-package com.aew.users.config;
+package com.aew.users.security;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

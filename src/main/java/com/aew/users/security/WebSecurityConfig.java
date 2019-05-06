@@ -1,7 +1,7 @@
-package com.aew.users.config;
+package com.aew.users.security;
 
-import com.aew.users.config.jwt.JwtAuthEntryPoint;
-import com.aew.users.config.jwt.JwtAuthTokenFilter;
+import com.aew.users.security.jwt.JwtAuthEntryPoint;
+import com.aew.users.security.jwt.JwtAuthTokenFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,13 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Configuracion de Spring Security
+ * Contains almost all the security configurations that are required
+ * Configuration of Spring Security
  * 
  * @author Adrian
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -57,12 +58,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().authorizeRequests()
-        .antMatchers("/api/auth/**").permitAll().anyRequest()
-        
-        .authenticated().and().exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
-        .and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/test/admin").hasRole("ADMIN")
+                .antMatchers("/api/auth/**").permitAll().anyRequest().authenticated().and().exceptionHandling()
+                .authenticationEntryPoint(unauthorizedHandler).and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
