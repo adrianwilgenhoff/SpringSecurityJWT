@@ -1,6 +1,7 @@
 package com.aew.users.messages.response;
 
 public class UserSummary {
+
     private Long id;
     private String username;
     private String name;

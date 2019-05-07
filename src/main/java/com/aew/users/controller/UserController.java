@@ -12,51 +12,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/v1")
 public class UserController {
 
-    
-@RequestMapping(value="/welcome", method=RequestMethod.GET)
-public String welcome() {
-    return "BIENVENIDO";
-}
-
-@Secured("ADMIN")
-@RequestMapping(value="/users", method=RequestMethod.GET)
-public String getUsers() {
-    return "Estas listando todos los users";
-}
-
-@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
-@RequestMapping(value="/user/{id}", method=RequestMethod.GET)
-public String getUser(@PathVariable("id") long id) {
-    return "Estas viendo el usuario " + id;
-}
-
-@RequestMapping(value="/user/{id}", method=RequestMethod.DELETE)
-public String deleteUser(@PathVariable("id") long id) {
-    return "Estas borrando el usuario " + id;
-}
-
-@RequestMapping(value="/user", method=RequestMethod.POST)
-public String addUser() {
-    return "Estas creando un nuevo user";
-}
-
-/*@RequestMapping(value="/logout", method = RequestMethod.GET)
-public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth != null){    
-        new SecurityContextLogoutHandler().logout(request, response, auth);
+    @RequestMapping(value = "/welcome", method = RequestMethod.GET)
+    public String welcome() {
+        return "BIENVENIDO";
     }
-    return "Te has deslogueado";
-}*/
 
-@RequestMapping(value = "/info", method = RequestMethod.GET)
-public String userInfo(Authentication authentication) {
-    if (authentication == null)
-        {
+    @Secured("ADMIN")
+    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    public String getUsers() {
+        return "Estas listando todos los users";
+    }
+
+    @PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
+    public String getUser(@PathVariable("id") long id) {
+        return "Estas viendo el usuario " + id;
+    }
+
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE)
+    public String deleteUser(@PathVariable("id") long id) {
+        return "Estas borrando el usuario " + id;
+    }
+
+    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    public String addUser() {
+        return "Estas creando un nuevo user";
+    }
+
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
+    public String userInfo(Authentication authentication) {
+        if (authentication == null) {
             return "Nadie esta logueado";
+        } else
+            return "estas logueado como " + authentication.getName();
     }
-    else 
-        return "estas logueado como " + authentication.getName();
-	}
 
 }

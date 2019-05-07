@@ -58,12 +58,29 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/test/admin").hasRole("ADMIN")
-                .antMatchers("/api/auth/**").permitAll().anyRequest().authenticated().and().exceptionHandling()
-                .authenticationEntryPoint(unauthorizedHandler).and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        //@formatter:off
+        http
+            .cors()
+        .and()
+            .authorizeRequests()
+            .antMatchers("/api/test/admin").hasRole("ADMIN")
+            .antMatchers("/api/auth/**").permitAll()
+            .antMatchers("/api/v1/info").permitAll()
+            .antMatchers("/api/test/user/*").permitAll()
+            .antMatchers("/me").permitAll()
+            .anyRequest().authenticated()
+        .and()
+            .csrf()
+            .disable()
+            .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling()
+            .authenticationEntryPoint(unauthorizedHandler)
+            .accessDeniedHandler(unauthorizedHandler)
+        .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        //@formatter:on
     }
 
 }

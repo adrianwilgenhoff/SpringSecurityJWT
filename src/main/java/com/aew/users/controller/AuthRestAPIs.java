@@ -21,8 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,14 +59,17 @@ public class AuthRestAPIs {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginForm loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = jwtProvider.generateJwtToken(authentication);
-        return ResponseEntity.ok(new JwtResponse(jwt));
+            String jwt = jwtProvider.generateJwtToken(authentication);
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("Invalid username/password supplied");
+        }
     }
 
     @PostMapping("/signup")
@@ -94,9 +99,9 @@ public class AuthRestAPIs {
 
                 break;
             case "ROLE_MOD":
-                Authority pmRole = roleRepository.findByName(RoleName.ROLE_MOD)
+                Authority modRole = roleRepository.findByName(RoleName.ROLE_MOD)
                         .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
-                roles.add(pmRole);
+                roles.add(modRole);
 
                 break;
             default:
@@ -105,14 +110,11 @@ public class AuthRestAPIs {
                 roles.add(userRole);
             }
         });
-
         user.setAuthorities(roles);
         User result = userRepository.save(user);
-        // userRepository.save(user);
-
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/users/{id}")
                 .buildAndExpand(result.getId()).toUri();
-
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully!"));
     }
+
 }

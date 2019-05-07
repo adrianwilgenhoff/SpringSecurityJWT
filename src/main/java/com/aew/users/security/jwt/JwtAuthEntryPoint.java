@@ -8,8 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
  * protected resource without proper authentication
  */
 @Component
-public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
+public class JwtAuthEntryPoint implements AuthenticationEntryPoint, AccessDeniedHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthEntryPoint.class);
 
@@ -28,4 +30,13 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         logger.error("Unauthorized error. Message - {}", e.getMessage());
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error -> Unauthorized");
     }
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+            AccessDeniedException accessDeniedException) throws IOException, ServletException {
+        logger.error("Unauthorized error. Message - {}", accessDeniedException.getMessage());
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error -> Unauthorized");
+
+    }
+
 }

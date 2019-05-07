@@ -23,18 +23,20 @@ public class JwtProvider {
 
     // Reads the JWT secret from properties.
     @Value("${aew.app.jwtSecret}")
-    private String jwtSecret;
+    private String jwtSecret = "jwtAewSecretKey";
 
     // Read the JWT expiration time from properties.
     @Value("${aew.app.jwtExpiration}")
-    private int jwtExpiration;
+    private int tokenValidityInMilliseconds = 86400;
+
+    // private long tokenValidityInMillisecondsForRememberMe;
 
     public String generateJwtToken(Authentication authentication) {
 
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
         return Jwts.builder().setSubject((userPrincipal.getUsername())).setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpiration))
+                .setExpiration(new Date((new Date()).getTime() + tokenValidityInMilliseconds))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }
 
@@ -57,7 +59,6 @@ public class JwtProvider {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty -> Message: {}", e);
         }
-
         return false;
     }
 }

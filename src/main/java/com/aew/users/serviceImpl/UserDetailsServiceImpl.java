@@ -30,7 +30,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * @return UserDetails object that Spring Security uses for performing various
      *         authentication and role based validations.
      */
+
     @Override
+
     @Transactional
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
 
@@ -38,5 +40,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 () -> new UsernameNotFoundException("User Not Found with -> username or email : " + login));
 
         return UserPrinciple.build(user);
+
     }
+
 }
